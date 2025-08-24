@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Library Seat Management</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>Library Seat Management (Admin View)</h2>
+    <div>
+      <label>Total seats: <input type="number" id="seatCount" value="10" min="1" max="100"></label>
+      <button onclick="setSeats()">Set Seats</button>
+      <button onclick="resetSeats()">Admin Morning Reset</button>
+    </div>
+    <!-- only retriving seat -->
+    <div id="seats"></div>
+
+  </div>
+  <script src="app.config/firebaseConfig.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
