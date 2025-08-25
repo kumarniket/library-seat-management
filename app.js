@@ -1,16 +1,3 @@
-// import { firebaseConfig }  from './app.config/firebaseConfig.js'
-// // --- ADD YOUR FIREBASE CONFIG HERE ---
-// // Go to Firebase console, create project, enable 'Realtime Database', copy config
-// var firebaseConfig = {
-//   apiKey: "AIzaSyCsj6scL5tC202ef_NzTmdM6L-1HCu1VKE",
-//   authDomain: "libraryseatmanagement-23d01.firebaseapp.com",
-//   databaseURL: "https://libraryseatmanagement-23d01-default-rtdb.firebaseio.com",
-//   projectId: "libraryseatmanagement-23d01",
-//   storageBucket: "libraryseatmanagement-23d01.firebasestorage.app",
-//   messagingSenderId: "432279031998",
-//   appId: "1:432279031998:web:5859d6f2d07da563788eef",
-//   measurementId: "G-PMKQ5P24T6"
-// };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
@@ -61,7 +48,7 @@ function renderSeats(seatStatus) {
     seat.innerHTML = `
     <div>
       <img src="${iconSrc}" alt="${statusText}" class="seat-icon" />
-      <span class="seat-number">${i}</span>
+      <span class="seat-number">Seat-${i}</span>
       <span class="seat-status-text">${statusText}</span>
     </div>
 `;
@@ -75,7 +62,6 @@ function renderSeats(seatStatus) {
         seatRef.child(i).set(!seatStatus[i]);
       };
     }
-
     seatsDiv.appendChild(seat);
   });
 }
@@ -98,5 +84,16 @@ function resetSeats() {
 
 // On page load: initialize seats
 window.onload = function() {
-  setSeats();
+  seatRef.once('value')
+    .then(snapshot => {
+      const seatStatus = snapshot.val() || {};
+      const seatCount = Object.keys(seatStatus).length;
+      document.getElementById('seatCount').value = seatCount || 10; // fallback to 10 if DB empty
+      renderSeats(seatStatus);
+    })
+    .catch(error => {
+      console.error('Error loading seat data:', error);
+      document.getElementById('seatCount').value = 10;
+    });
 };
+
