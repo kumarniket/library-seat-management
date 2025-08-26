@@ -1,83 +1,104 @@
-
+// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-
-// DB Reference for seats
 const seatRef = db.ref("librarySeats/");
 
-// Setup or update number of seats
+// Set up or update number of seats
 function setSeats() {
   const n = parseInt(document.getElementById('seatCount').value);
   seatRef.once('value').then(snapshot => {
     const seatStatus = snapshot.val() || {};
     const newStatus = {};
-    for (let i = 1; i <= n; i++)
-      newStatus[i] = seatStatus[i] === true ? true : false;
+    for (let i = 1; i <= n; i++) {
+      const s = seatStatus[i];
+      if (s && typeof s === 'object') {
+        newStatus[i] = s; // keep previous object seat data if exists
+      } else {
+        newStatus[i] = { occupied: false, occupiedAt: null, totalTime: null }; // initializing as vacant object
+      }
+    }
     seatRef.set(newStatus);
   });
 }
 
-// Render seat buttons from DB
+// Render seat buttons from DB with icon, text, timings (Admin view)
+// Always attaches click handler
 function renderSeats(seatStatus) {
   const seatsDiv = document.getElementById('seats');
   seatsDiv.innerHTML = '';
 
-  // Object.keys(seatStatus).forEach(i => {
-  //   const seat = document.createElement('div');
-  //   seat.classList.add('seat');
-  //   if (seatStatus[i]) seat.classList.add('occupied');
-  //   seat.innerHTML = `<span class="seat-number">${i}</span>`;
-  //   seat.onclick = function() {
-  //     seatRef.child(i).set(!seatStatus[i]);
-  //   };
-  //   seatsDiv.appendChild(seat);
-  // });
-
   Object.keys(seatStatus).forEach(i => {
-    const seat = document.createElement('div');
-    seat.classList.add('seat');
-    if (seatStatus[i]) seat.classList.add('occupied');
-
-    // Determine icon and text based on status
-    const isOccupied = !!seatStatus[i];
+    const seatData = seatStatus[i] || { occupied: false, occupiedAt: null, totalTime: null };
+    const isOccupied = !!seatData.occupied;
     const iconSrc = isOccupied ? 'assets/occupied.png' : 'assets/vacant.png';
     const statusText = isOccupied ? 'Occupied' : 'Vacant';
 
-    // Seat HTML structure
-    
-    seat.innerHTML = `
-    <div>
-      <img src="${iconSrc}" alt="${statusText}" class="seat-icon" />
-      <span class="seat-number">Seat-${i}</span>
-      <span class="seat-status-text">${statusText}</span>
-    </div>
-`;
-
-
-    // For admin page (index.html), make seats clickable to toggle status
-    // For seat.html (student view), omit click handler or disable click
-    if (typeof seat.onclick !== 'undefined') {
-      seat.onclick = function() {
-        // toggle seat occupied/vacant state
-        seatRef.child(i).set(!seatStatus[i]);
-      };
+    // Display elapsed time or total time consumed
+    let infoText = '';
+    if (isOccupied && seatData.occupiedAt) {
+      const elapsedMins = Math.floor((Date.now() - seatData.occupiedAt) / 60000);
+      infoText = `<small class="seat-info-text">Occupied for: ${elapsedMins} min</small>`;
+    } else if (!isOccupied && seatData.totalTime != null) {
+      infoText = `<small class="seat-info-text">Last Occupied: ${seatData.totalTime} min</small>`;
     }
+
+    const seat = document.createElement('div');
+    seat.classList.add('seat');
+    if (isOccupied) seat.classList.add('occupied');
+
+    seat.innerHTML = `
+      <div>
+        <img src="${iconSrc}" alt="${statusText}" class="seat-icon" />
+        <span class="seat-number">Seat No-${i}</span>
+        <span class="seat-status-text">S-${statusText}</span><br>
+        ${infoText}
+      </div>
+    `;
+
+    // Admin click handler: toggle occupancy, record timing
+    seat.onclick = function() {
+      const now = Date.now();
+      const currentSeatData = seatStatus[i] || { occupied: false, occupiedAt: null, totalTime: null };
+
+      if (!currentSeatData.occupied) {
+        // Vacant → Occupied
+        seatRef.child(i).set({
+          occupied: true,
+          occupiedAt: now,
+          totalTime: null
+        });
+      } else {
+        // Occupied → Vacant, record duration
+        const occupiedAt = currentSeatData.occupiedAt;
+        const totalTime = occupiedAt ? Math.round((now - occupiedAt) / 60000) : 0;
+        seatRef.child(i).set({
+          occupied: false,
+          occupiedAt: null,
+          totalTime: totalTime
+        });
+      }
+    };
+
     seatsDiv.appendChild(seat);
   });
 }
 
-// Listen for seat updates, real-time
+// Real-time seat DB updates
 seatRef.on('value', snapshot => {
   const seatStatus = snapshot.val() || {};
-  if(Object.keys(seatStatus).length) renderSeats(seatStatus);
+  if (Object.keys(seatStatus).length) renderSeats(seatStatus);
 });
 
-// Reset all seats to vacant
+// Reset all seats to vacant (for manual reset)
 function resetSeats() {
   seatRef.once('value').then(snapshot => {
     const seatStatus = snapshot.val() || {};
     Object.keys(seatStatus).forEach(i => {
-      seatRef.child(i).set(false);
+      seatRef.child(i).set({
+        occupied: false,
+        occupiedAt: null,
+        totalTime: null
+      });
     });
   });
 }
@@ -88,7 +109,7 @@ window.onload = function() {
     .then(snapshot => {
       const seatStatus = snapshot.val() || {};
       const seatCount = Object.keys(seatStatus).length;
-      document.getElementById('seatCount').value = seatCount || 10; // fallback to 10 if DB empty
+      document.getElementById('seatCount').value = seatCount || 10; // fallback to 10
       renderSeats(seatStatus);
     })
     .catch(error => {
@@ -97,3 +118,21 @@ window.onload = function() {
     });
 };
 
+// Migration function: update boolean seats to object
+function migrateSeatStatus() {
+  seatRef.once('value').then(snapshot => {
+    const seatStatus = snapshot.val() || {};
+    Object.keys(seatStatus).forEach(i => {
+      const oldValue = seatStatus[i];
+      if (typeof oldValue === 'boolean') {
+        seatRef.child(i).set({
+          occupied: oldValue,
+          occupiedAt: null,
+          totalTime: null
+        });
+      }
+    });
+    console.log('Seat DB migrated to object structure');
+  });
+}
+window.migrateSeatStatus = migrateSeatStatus; // Ensure global scope for button/call
