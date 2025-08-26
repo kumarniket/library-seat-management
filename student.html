@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Library Seat Status</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>Library Seat Status (Student View)</h2>
+    <button class="button" onclick="window.location.href='index.html'">Admin View</button>
+
+    <!-- Login functionallity with firebase -->
+    <div id="auth-section">
+      <h3>Student Login / Register</h3>
+      <input type="email" id="userEmail" placeholder="Email" required><br>
+      <input type="password" id="userPassword" placeholder="Password" required><br>
+      <button onclick="login()">Login</button>
+      <button onclick="register()">Register</button>
+      <div id="authError" style="color:red;margin-top:4px;"></div>
+    </div>
+    
+    <div id="logged-in-section" style="display:none;">
+      <!-- Your seat table and controls go here -->
+      <p id="welcomeMsg"></p>
+      <button onclick="logout()">Logout</button>
+      <div id="seats"></div>
+    </div>
+
+    <!-- <div id="seats"></div> -->
+  </div>
+  <!-- <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script> -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="app.config/firebaseConfig.js"></script>
+  <script src="auth.js"></script>
+  <script src="app.js"></script> 
+  
+</body>
+</html>

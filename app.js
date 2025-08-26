@@ -1,7 +1,7 @@
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const seatRef = db.ref("librarySeats/");
+// firebase.initializeApp(firebaseConfig);
+// const db = firebase.database();
+// const seatRef = db.ref("librarySeats/");
 
 // Set up or update number of seats
 function setSeats() {
@@ -50,7 +50,7 @@ function renderSeats(seatStatus) {
       <div>
         <img src="${iconSrc}" alt="${statusText}" class="seat-icon" />
         <span class="seat-number">Seat No-${i}</span>
-        <span class="seat-status-text">S-${statusText}</span><br>
+        <span class="seat-status-text">${statusText}</span><br>
         ${infoText}
       </div>
     `;

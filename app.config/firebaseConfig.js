@@ -11,4 +11,11 @@ var firebaseConfig = {
     measurementId: "G-PMKQ5P24T6"
   };
 
+  if(!firebase.apps.length){
+    firebase.initializeApp(firebaseConfig);
+  }
+
+window.db = firebase.database();
+window.seatRef = window.db.ref("librarySeats/");
+
 // export default firebaseConfig;
