@@ -41,6 +41,11 @@ function renderSeats(seatStatus) {
     } else if (!isOccupied && seatData.totalTime != null) {
       infoText = `<small class="seat-info-text">Last Occupied: ${seatData.totalTime} min</small>`;
     }
+    //display seat occupant
+    let occupantText = '';
+    if(seatData.occupied && seatData.student && typeof seatData.student === "object" && typeof seatData.student.name === "string"){
+      occupantText = `<small class="seat-occupant">By: ${seatData.student.name}</small>`;
+    }
 
     const seat = document.createElement('div');
     seat.classList.add('seat');
@@ -52,31 +57,64 @@ function renderSeats(seatStatus) {
         <span class="seat-number">Seat No-${i}</span>
         <span class="seat-status-text">${statusText}</span><br>
         ${infoText}
+        ${occupantText}
       </div>
     `;
 
     // Admin click handler: toggle occupancy, record timing
-    seat.onclick = function() {
-      const now = Date.now();
-      const currentSeatData = seatStatus[i] || { occupied: false, occupiedAt: null, totalTime: null };
+    // seat.onclick = function() {
+    //   const now = Date.now();
+    //   const currentSeatData = seatStatus[i] || { occupied: false, occupiedAt: null, totalTime: null };
 
-      if (!currentSeatData.occupied) {
-        // Vacant → Occupied
-        seatRef.child(i).set({
-          occupied: true,
-          occupiedAt: now,
-          totalTime: null
-        });
-      } else {
-        // Occupied → Vacant, record duration
-        const occupiedAt = currentSeatData.occupiedAt;
-        const totalTime = occupiedAt ? Math.round((now - occupiedAt) / 60000) : 0;
-        seatRef.child(i).set({
-          occupied: false,
-          occupiedAt: null,
-          totalTime: totalTime
-        });
-      }
+    //   if (!currentSeatData.occupied) {
+    //     // Vacant → Occupied
+    //     seatRef.child(i).set({
+    //       occupied: true,
+    //       occupiedAt: now,
+    //       totalTime: null
+    //     });
+    //   } else {
+    //     // Occupied → Vacant, record duration
+    //     const occupiedAt = currentSeatData.occupiedAt;
+    //     const totalTime = occupiedAt ? Math.round((now - occupiedAt) / 60000) : 0;
+    //     seatRef.child(i).set({
+    //       occupied: false,
+    //       occupiedAt: null,
+    //       totalTime: totalTime
+    //     });
+    //   }
+    // };
+    seat.onclick = function() {
+      const user = firebase.auth().currentUser;
+      if (!user) return;
+    
+      // Fetch the student's name from /students/{uid}
+      firebase.database().ref('students/' + user.uid).once('value').then(snapshot => {
+        const studentName = snapshot.val() ? snapshot.val().name : user.email;
+    
+        if (!seatData.occupied) {
+          // Vacant → Occupied
+          seatRef.child(i).set({
+            occupied: true,
+            occupiedAt: Date.now(),
+            totalTime: null,
+            student: {
+              uid: user.uid,
+              name: studentName
+            }
+          });
+        } else if (seatData.occupied && seatData.student && seatData.student.uid === user.uid) {
+          // Occupied by this user → Vacate and record consumption
+          const occupiedAt = seatData.occupiedAt;
+          const totalTime = occupiedAt ? Math.round((Date.now() - occupiedAt) / 60000) : 0;
+          seatRef.child(i).set({
+            occupied: false,
+            occupiedAt: null,
+            totalTime: totalTime,
+            student: null
+          });
+        }
+      });
     };
 
     seatsDiv.appendChild(seat);

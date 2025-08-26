@@ -90,7 +90,15 @@ body {
   width: 90%;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
-.seat.occupied .seat-info-text {
+
+.seat-occupant {
+  font-size: 11px;
+  color: rgb(5, 5, 5);
+  margin-top: 2px;
+  margin-left: 2px;
+  margin-bottom: 2px;
+}
+.seat.occupied .seat-info-text{
   background-color: #ffe68c;
   color:  #111;
 }
