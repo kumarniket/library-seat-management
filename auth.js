@@ -20,12 +20,6 @@ function showSeatUI(user) {
       .catch(error => { document.getElementById('authError').textContent = error.message; });
   }
   
-//   function register() {
-//     const email = document.getElementById('userEmail').value;
-//     const pass = document.getElementById('userPassword').value;
-//     firebase.auth().createUserWithEmailAndPassword(email, pass)
-//       .catch(error => { document.getElementById('authError').textContent = error.message; });
-//   }
     function register() {
         const email = document.getElementById('userEmail').value;
         const pass = document.getElementById('userPassword').value;
@@ -37,6 +31,9 @@ function showSeatUI(user) {
             name: name,
             email: email
             });
+        })
+        .then(()=>{
+          alert('Registartion successfully! You are logged in!!')
         })
         .catch(error => {
             document.getElementById('authError').textContent = error.message;

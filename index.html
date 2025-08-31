@@ -13,17 +13,32 @@
   <div class="container">
     <h2>Library Seat Management (Admin View)</h2>
     <button class="button" onclick="window.location.href='student.html'">Go to Student View</button>
-    
+
+    <h3>Register Student & Assign Seat</h3>
+      <input type="text" id="adminStudentName" placeholder="Student Name" required><br>
+      <input type="email" id="adminStudentEmail" placeholder="Student Email" required><br>
+      <input type="password" id="adminStudentPassword" placeholder="Student Password" required><br>
+      <select id="adminAssignSeat">
+        <option value="">Select Seat</option>
+        <!-- <option value="1">Seat 1</option>
+        <option value="2">Seat 2</option> -->
+        <!-- Add options for all your available seats -->
+      </select>
+    <button onclick="adminRegisterAndAssign()">Register & Assign Seat</button>
+    <div id="adminStudentMessage" style="color:green;margin-top:4px"></div>
+    </br>
     <div>
             <label>Total seats: <input type="number" id="seatCount" min="1" max="100"></label>
             <button onclick="setSeats()">Set Seats</button>
             <button onclick="resetSeats()">Admin Morning Reset</button>
-            <!-- <button onclick="migrateSeatStatus()">Migrate Run</button> -->
+            <button onclick="migrateSeatStatus()">Migrate Run</button>
     </div>
     <!-- only retriving seat --> 
     <div id="seats"></div>
   </div>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="app.config/firebaseConfig.js"></script>
+  <!-- <script src="auth.js"></script> -->
   <script src="app.js"></script>
 </body>
 </html>
